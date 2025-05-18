@@ -7,6 +7,7 @@ import com.security.notes.services.AuditLogService;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 public class AuditLogServiceImpl implements AuditLogService {
@@ -54,5 +55,15 @@ public class AuditLogServiceImpl implements AuditLogService {
         log.setTimestamp(LocalDateTime.now());
 
         auditLogRepository.save(log);
+    }
+
+    @Override
+    public List<AuditLog> getAllAuditLogs() {
+        return auditLogRepository.findAll();
+    }
+
+    @Override
+    public List<AuditLog> getAuditLogsForNoteId(Long id) {
+        return auditLogRepository.findByNoteId(id);
     }
 }

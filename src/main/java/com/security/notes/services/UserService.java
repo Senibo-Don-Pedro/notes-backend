@@ -1,6 +1,7 @@
 package com.security.notes.services;
 
 import com.security.notes.dtos.UserDTO;
+import com.security.notes.models.Role;
 import com.security.notes.models.User;
 import java.util.List;
 
@@ -12,4 +13,18 @@ public interface UserService {
     UserDTO getUserById(Long id);
 
     User findByUsername(String username);
+
+    void updateAccountLockStatus(Long userId, boolean lock);
+
+    List<Role> getAllRoles();
+
+    void updateAccountExpiryStatus(Long userId, boolean expire);
+
+    void updateAccountEnabledStatus(Long userId, boolean enabled);
+
+    void updateCredentialsExpiryStatus(Long userId, boolean expire);
+
+    void updatePassword(Long userId, String password);
+
+    void generatePasswordResetToken(String email);
 }

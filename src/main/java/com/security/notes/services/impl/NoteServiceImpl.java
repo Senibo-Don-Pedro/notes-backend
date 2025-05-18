@@ -26,9 +26,15 @@ public class NoteServiceImpl implements NoteService {
         Note note = new Note();
         note.setContent(content);
         note.setOwnerUsername(username);
-        auditLogService.logNoteCreation(username, note);
 
-        return noteRepository.save(note);
+        // Save first to generate ID
+        Note savedNote = noteRepository.save(note);
+
+        // Now the ID is available
+        auditLogService.logNoteCreation(username, savedNote);
+
+        return savedNote;
+
     }
 
     @Override

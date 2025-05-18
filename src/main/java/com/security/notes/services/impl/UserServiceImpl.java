@@ -9,6 +9,7 @@ import com.security.notes.repositories.PasswordResetTokenRepository;
 import com.security.notes.repositories.RoleRepository;
 import com.security.notes.repositories.UserRepository;
 import com.security.notes.services.UserService;
+import com.security.notes.util.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -23,15 +24,16 @@ import java.util.UUID;
 @Service
 public class UserServiceImpl implements UserService {
 
-    @Value("{$frontend.url}")
+    @Value("${frontend.url}")
     String frontendUrl;
 
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
-    private final PasswordResetToken passwordResetToken;
+
     private final PasswordResetTokenRepository passwordResetTokenRepository;
+    private final EmailService emailService;
 
 
     // Spring will auto-wire this (only one constructor → @Autowired is optional)
@@ -39,13 +41,15 @@ public class UserServiceImpl implements UserService {
     public UserServiceImpl(UserRepository userRepository,
                            RoleRepository roleRepository,
                            PasswordEncoder passwordEncoder,
-                           PasswordResetToken passwordResetToken,
-                           PasswordResetTokenRepository passwordResetTokenRepository) {
+
+                           PasswordResetTokenRepository passwordResetTokenRepository,
+                           EmailService emailService) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
-        this.passwordResetToken = passwordResetToken;
+
         this.passwordResetTokenRepository = passwordResetTokenRepository;
+        this.emailService = emailService;
     }
 
     @Override
@@ -164,7 +168,11 @@ public class UserServiceImpl implements UserService {
 
         //Send email to user
 
+        emailService.sendPasswordResetEmail(user.getEmail(), resetUrl);
+    }
 
+    @Override
+    public void resetPassword(String token, String newPassword) {
 
     }
 }

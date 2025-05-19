@@ -173,6 +173,21 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void resetPassword(String token, String newPassword) {
+        PasswordResetToken resetToken = passwordResetTokenRepository.findByToken(token)
+                .orElseThrow(() -> new RuntimeException("Invalid Password Reset Token"));
 
+        if (resetToken.isUsed()) throw new RuntimeException("Password reset token has been used");
+
+        if (resetToken.getExpiryDate().isBefore(Instant.now())) throw new RuntimeException("Password reset token has expired");
+
+        User user = resetToken.getUser();
+
+        user.setPassword(passwordEncoder.encode(newPassword));
+
+        userRepository.save(user);
+
+        resetToken.setUsed(true);
+
+        passwordResetTokenRepository.save(resetToken);
     }
 }

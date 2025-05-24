@@ -20,7 +20,6 @@ public class PasswordResetToken {
     @Column(nullable = false)
     private Instant expiryDate;
 
-
     private boolean used;
 
     @ManyToOne(fetch = FetchType.LAZY)

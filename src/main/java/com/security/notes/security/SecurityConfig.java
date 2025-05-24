@@ -1,5 +1,7 @@
 package com.security.notes.security;
 
+
+import com.security.notes.Config.OAuth2LoginSuccessHandler;
 import com.security.notes.models.AppRole;
 import com.security.notes.models.Role;
 import com.security.notes.models.User;
@@ -11,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -40,6 +43,10 @@ public class SecurityConfig {
     @Autowired
     private AuthEntryPointJwt unauthorizedHandler;
 
+    @Autowired
+    @Lazy
+    OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
+
     @Bean
     public AuthTokenFilter authenticationJwtTokenFilter() {
         return new AuthTokenFilter();
@@ -67,11 +74,15 @@ public class SecurityConfig {
         );
 
         http.authorizeHttpRequests((requests)
-                -> requests
-                .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                .requestMatchers("/api/csrf-token").permitAll()
-                .requestMatchers("/api/auth/public/**").permitAll()
-                .anyRequest().authenticated());
+                        -> requests
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/csrf-token").permitAll()
+                        .requestMatchers("/api/auth/public/**").permitAll()
+                        .requestMatchers("/oauth2/**").permitAll()
+                        .anyRequest().authenticated())
+                .oauth2Login(oauth2 -> {
+                    oauth2.successHandler(oAuth2LoginSuccessHandler);
+                });
         http.exceptionHandling(exception
                 -> exception.authenticationEntryPoint(unauthorizedHandler));
         http.addFilterBefore(authenticationJwtTokenFilter(),
@@ -84,7 +95,7 @@ public class SecurityConfig {
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration)
-        throws Exception {
+            throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
     }
 

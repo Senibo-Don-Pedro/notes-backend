@@ -8,8 +8,10 @@ import com.security.notes.models.User;
 import com.security.notes.repositories.PasswordResetTokenRepository;
 import com.security.notes.repositories.RoleRepository;
 import com.security.notes.repositories.UserRepository;
+import com.security.notes.services.TotpService;
 import com.security.notes.services.UserService;
 import com.security.notes.util.EmailService;
+import com.warrenstrange.googleauth.GoogleAuthenticatorKey;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -20,6 +22,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -34,6 +37,7 @@ public class UserServiceImpl implements UserService {
 
     private final PasswordResetTokenRepository passwordResetTokenRepository;
     private final EmailService emailService;
+    private final TotpService totpService;
 
 
     // Spring will auto-wire this (only one constructor → @Autowired is optional)
@@ -41,15 +45,15 @@ public class UserServiceImpl implements UserService {
     public UserServiceImpl(UserRepository userRepository,
                            RoleRepository roleRepository,
                            PasswordEncoder passwordEncoder,
-
                            PasswordResetTokenRepository passwordResetTokenRepository,
-                           EmailService emailService) {
+                           EmailService emailService,
+                           TotpService totpService) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
-
         this.passwordResetTokenRepository = passwordResetTokenRepository;
         this.emailService = emailService;
+        this.totpService = totpService;
     }
 
     @Override
@@ -205,4 +209,38 @@ public class UserServiceImpl implements UserService {
 
         return userRepository.save(newUser);
     }
+
+    @Override
+    public GoogleAuthenticatorKey generate2FASecret(Long userId){
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        GoogleAuthenticatorKey key = totpService.generateSecret();
+        user.setTwoFactorSecret(key.getKey());
+        userRepository.save(user);
+        return key;
+    }
+
+    @Override
+    public boolean validate2FACode(Long userId, int code){
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        return totpService.verifyCode(user.getTwoFactorSecret(), code);
+    }
+
+    @Override
+    public void enable2FA(Long userId){
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        user.setTwoFactorEnabled(true);
+        userRepository.save(user);
+    }
+
+    @Override
+    public void disable2FA(Long userId){
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        user.setTwoFactorEnabled(false);
+        userRepository.save(user);
+    }
+
 }

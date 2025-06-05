@@ -75,6 +75,14 @@ public class SecurityConfig {
 
         http.authorizeHttpRequests((requests)
                         -> requests
+                        // -- Swagger UI v3 (OpenAPI) endpoints, permit all:
+                        .requestMatchers(
+                                "/v3/api-docs/**",
+                                "/swagger-ui.html",
+                                "/swagger-ui/**",
+                                "/swagger-resources/**",
+                                "/webjars/**"
+                        ).permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/csrf-token").permitAll()
                         .requestMatchers("/api/auth/public/**").permitAll()
@@ -109,11 +117,18 @@ public class SecurityConfig {
                                       UserRepository userRepository,
                                       PasswordEncoder passwordEncoder) {
         return args -> {
+
             Role userRole = roleRepository.findByRoleName(AppRole.ROLE_USER)
-                    .orElseGet(() -> roleRepository.save(new Role(AppRole.ROLE_USER)));
+                    .orElseGet(() -> {
+                        Role newRole = new Role(AppRole.ROLE_USER);
+                        return roleRepository.save(newRole);
+                    });
 
             Role adminRole = roleRepository.findByRoleName(AppRole.ROLE_ADMIN)
-                    .orElseGet(() -> roleRepository.save(new Role(AppRole.ROLE_ADMIN)));
+                    .orElseGet(() -> {
+                        Role newRole = new Role(AppRole.ROLE_ADMIN);
+                        return roleRepository.save(newRole);
+                    });
 
             if (!userRepository.existsByUserName("user1")) {
                 User user1 = new User("user1", "user1@example.com",

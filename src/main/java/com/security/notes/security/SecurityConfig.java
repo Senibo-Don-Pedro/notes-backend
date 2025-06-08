@@ -68,10 +68,12 @@ public class SecurityConfig {
 
     @Bean
     SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
-        http.csrf(csrf ->
-                csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-                        .ignoringRequestMatchers("/api/auth/public/**")
-        );
+//        http.csrf(csrf ->
+//                csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+//                        .ignoringRequestMatchers("/api/auth/public/**")
+//        );
+        http.csrf(AbstractHttpConfigurer::disable);
+
 
         http.authorizeHttpRequests((requests)
                         -> requests
@@ -145,8 +147,8 @@ public class SecurityConfig {
                 userRepository.save(user1);
             }
 
-            if (!userRepository.existsByUserName("admin")) {
-                User admin = new User("admin", "admin@example.com",
+            if (!userRepository.existsByUserName("newAdmin")) {
+                User admin = new User("newAdmin", "newAdmin@example.com",
                         passwordEncoder.encode("adminPass"));
                 admin.setAccountNonLocked(true);
                 admin.setAccountNonExpired(true);

@@ -19,6 +19,7 @@ import com.warrenstrange.googleauth.GoogleAuthenticatorKey;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -48,13 +49,14 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 
+
 @Tag(
         name = "Authentication",
         description = "Endpoints for user registration, login, and authentication management"
 )
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = "http://localhost:3000",
+@CrossOrigin(origins = "${frontend.url}",
         maxAge = 3600,
         allowCredentials = "true")
 public class AuthController {

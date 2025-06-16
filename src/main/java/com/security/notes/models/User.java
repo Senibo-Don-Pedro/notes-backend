@@ -54,7 +54,7 @@ public class User{
     private LocalDate accountExpiryDate;
 
     private String twoFactorSecret;
-    private boolean isTwoFactorEnabled = false;
+    private boolean twoFactorEnabled = false;
     private String signUpMethod;
 
     @ManyToOne(fetch = FetchType.EAGER, cascade = {CascadeType.MERGE})
